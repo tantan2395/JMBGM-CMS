@@ -1,5 +1,6 @@
 import { getPayload } from 'payload'
 import config from '../payload.config'
+import { FALLBACK_CONNECTS } from '../lib/constants/connect-fallbacks'
 import 'dotenv/config'
 
 async function seed() {
@@ -364,6 +365,31 @@ async function seed() {
     console.log('✅ 5-Act Narrative chapters successfully seeded.')
   } else {
     console.log('ℹ️ StoryChapters collection already contains records.')
+  }
+
+  // 5. Seed Connect ministries directory
+  console.log('🤝 Checking Connects / ministries directory...')
+  const existingConnects = await payload.find({
+    collection: 'connects',
+    limit: 1,
+  })
+
+  if (existingConnects.totalDocs === 0) {
+    console.log(`➕ Seeding ${FALLBACK_CONNECTS.length} canonical connect ministries...`)
+    for (const ministry of FALLBACK_CONNECTS) {
+      const { id: _id, image: _image, ...data } = ministry
+      await payload.create({
+        collection: 'connects',
+        data: {
+          ...data,
+          _status: 'published',
+        },
+      })
+      console.log(`  ✨ Created ${ministry.name}`)
+    }
+    console.log('✅ Canonical connect ministries seeded.')
+  } else {
+    console.log('ℹ️ Connects collection already contains records.')
   }
 
   console.log('🎉 Seeding completed successfully!')

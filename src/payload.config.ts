@@ -7,6 +7,7 @@ import sharp from 'sharp'
 
 import { Users } from './collections/Users'
 import { Media } from './collections/Media'
+import { Connects } from './collections/Connects'
 import { Pages } from './collections/Pages'
 import { Announcements } from './collections/Announcements'
 import { StoryChapters } from './collections/StoryChapters'
@@ -24,7 +25,7 @@ export default buildConfig({
       baseDir: path.resolve(dirname),
     },
   },
-  collections: [Users, Media, Pages, Announcements, StoryChapters, Sermons, Outreaches],
+  collections: [Users, Media, Connects, Pages, Announcements, StoryChapters, Sermons, Outreaches],
   globals: [SiteSettings],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || 'jmbgm-app-development-secret-key-32-chars-long',
