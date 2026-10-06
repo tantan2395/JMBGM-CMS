@@ -69,6 +69,7 @@ export interface Config {
   collections: {
     users: User;
     media: Media;
+    connects: Connect;
     pages: Page;
     announcements: Announcement;
     'story-chapters': StoryChapter;
@@ -83,6 +84,7 @@ export interface Config {
   collectionsSelect: {
     users: UsersSelect<false> | UsersSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
+    connects: ConnectsSelect<false> | ConnectsSelect<true>;
     pages: PagesSelect<false> | PagesSelect<true>;
     announcements: AnnouncementsSelect<false> | AnnouncementsSelect<true>;
     'story-chapters': StoryChaptersSelect<false> | StoryChaptersSelect<true>;
@@ -204,6 +206,47 @@ export interface Media {
       filename?: string | null;
     };
   };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "connects".
+ */
+export interface Connect {
+  id: number;
+  name: string;
+  /**
+   * URL-friendly identifier for the Learn More page.
+   */
+  slug: string;
+  /**
+   * Short summary shown on directory cards and social sharing.
+   */
+  description?: string | null;
+  /**
+   * Life-stage / ministry demographic used to filter the directory.
+   */
+  category: 'youth' | 'men' | 'women' | 'family' | 'young-adults' | 'serve' | 'general';
+  /**
+   * Meeting cadence shown on cards (e.g. Fridays · 7:00 PM).
+   */
+  schedule?: string | null;
+  /**
+   * Displayed on the Connect card and detail page.
+   */
+  image?: (number | null) | Media;
+  /**
+   * Optional emoji shown as a badge on the card
+   */
+  icon?: string | null;
+  /**
+   * Registration / interest form. Protocol is added automatically if omitted.
+   */
+  googleFormUrl: string;
+  order?: number | null;
+  isActive?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -460,6 +503,10 @@ export interface PayloadLockedDocument {
         value: number | Media;
       } | null)
     | ({
+        relationTo: 'connects';
+        value: number | Connect;
+      } | null)
+    | ({
         relationTo: 'pages';
         value: number | Page;
       } | null)
@@ -598,6 +645,25 @@ export interface MediaSelect<T extends boolean = true> {
               filename?: T;
             };
       };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "connects_select".
+ */
+export interface ConnectsSelect<T extends boolean = true> {
+  name?: T;
+  slug?: T;
+  description?: T;
+  category?: T;
+  schedule?: T;
+  image?: T;
+  icon?: T;
+  googleFormUrl?: T;
+  order?: T;
+  isActive?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
