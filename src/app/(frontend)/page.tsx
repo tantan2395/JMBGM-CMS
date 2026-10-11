@@ -66,6 +66,7 @@ async function getSermons(): Promise<Sermon[]> {
       },
       sort: "-date",
       limit: 3,
+      depth: 2,
     })
     return res.docs as Sermon[]
   } catch {
@@ -329,10 +330,18 @@ export default async function HomePage() {
       ? sermons.map((s) => ({
           id: s.id,
           title: s.title,
-          speaker: s.speaker,
+          speaker:
+            typeof s.speaker === "object" && s.speaker !== null
+              ? s.speaker.name
+              : "Senior Pastor",
           date: s.date,
           scripture: s.scripture || "Holy Scripture",
-          series: s.series || "Sunday Celebration",
+          series:
+            typeof s.series === "object" && s.series !== null
+              ? s.series.title
+              : typeof s.series === "string"
+                ? s.series
+                : "Sunday Celebration",
           summary: s.summary || "Listen to this life-transforming message from the Word of God.",
           thumbnailUrl:
             getMediaUrl(s.thumbnail) ||
