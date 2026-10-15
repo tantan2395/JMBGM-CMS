@@ -35,4 +35,4 @@ public/videos/originals/
 
 # Ignore uploaded media files
 /public/media/*
-!/public/media/.gitkeep
+!/public/media/.gitkeep 

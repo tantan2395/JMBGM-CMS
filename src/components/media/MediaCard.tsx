@@ -1,9 +1,9 @@
 'use client'
 import Link from 'next/link'
-import Image from 'next/image'
 import { useMemo, useState } from 'react'
 import { getAutoThumbnail } from '@/lib/video'
 import { PlaybackModal } from './PlaybackModal'
+import { SermonThumbnail } from './SermonThumbnail'
 
 type MediaThumb = {
   url?: string | null
@@ -14,6 +14,8 @@ type MediaThumb = {
 }
 
 type MediaRelation<T> = T | number | null | undefined
+
+const FALLBACK_THUMBNAIL = '/media/background.jpg'
 
 type MediaCardItem = {
   title?: string | null
@@ -45,7 +47,8 @@ export function MediaCard({ item }: { item: MediaCardItem }) {
     () =>
       thumbnailData?.sizes?.card?.url ||
       thumbnailData?.url ||
-      getAutoThumbnail(item.videoUrl || undefined),
+      getAutoThumbnail(item.videoUrl || undefined) ||
+      FALLBACK_THUMBNAIL,
     [thumbnailData, item.videoUrl]
   )
 
@@ -65,54 +68,50 @@ export function MediaCard({ item }: { item: MediaCardItem }) {
 
   const titleText = item.title ?? speakerName ?? 'Sermon'
   const formattedDate = formatDate(item.date)
-  const hasValidThumb = typeof thumb === 'string' && thumb.length > 0
+  const audioUrl = audioData?.url ?? undefined
+  const hasPlayback = Boolean(item.videoUrl || audioUrl)
   const hasTitleLink = Boolean(item.slug)
   const imageAlt = thumbnailData?.alt ?? titleText
-  const audioUrl = audioData?.url ?? undefined
 
   return (
     <>
-      <div className="group overflow-hidden rounded-lg border shadow-sm transition hover:shadow-md">
+      <div className="group overflow-hidden rounded-lg border border-[#E2D9CC] bg-white shadow-sm transition hover:border-[#C1683B]/50 hover:shadow-md">
         <button
           type="button"
           onClick={() => setOpen(true)}
-          className="relative block aspect-video w-full bg-gray-100"
-          aria-label={`Play ${titleText}`}
+          disabled={!hasPlayback}
+          className="relative block aspect-video w-full bg-[#EFE8DC] disabled:cursor-default"
+          aria-label={hasPlayback ? `Play ${titleText}` : `${titleText} thumbnail`}
         >
-          {hasValidThumb ? (
-            <Image
-              src={thumb}
-              alt={imageAlt}
-              fill
-              className="object-cover transition group-hover:scale-105"
-              sizes="(max-width: 768px) 100vw, 33vw"
-              unoptimized={thumb.startsWith('https://img.youtube.com')}
-            />
-          ) : (
-            <div className="flex h-full items-center justify-center text-gray-400">
-              {speakerName || 'Sermon'}
-            </div>
-          )}
-          <span className="absolute inset-0 flex items-center justify-center bg-black/20 opacity-0 transition group-hover:opacity-100">
-            <span className="rounded-full bg-white/90 px-4 py-2 text-sm font-medium">
-              ▶ Play
+          <SermonThumbnail
+            src={thumb}
+            alt={imageAlt}
+            className="absolute inset-0 h-full w-full object-cover transition group-hover:scale-105"
+          />
+          {hasPlayback && (
+            <span className="absolute inset-0 flex items-center justify-center bg-[#2F3E33]/20 opacity-0 transition group-hover:opacity-100">
+              <span className="rounded-full bg-[#FBF6EE]/95 px-4 py-2 text-sm font-semibold text-[#C1683B]">
+                ▶ Play
+              </span>
             </span>
-          </span>
+          )}
         </button>
         <div className="p-4">
           {hasTitleLink ? (
             <Link href={`/media/${item.slug}`} className="block">
-              <h2 className="text-lg font-semibold hover:underline">{titleText}</h2>
+              <h2 className="text-lg font-semibold text-[#2F3E33] hover:text-[#C1683B] hover:underline">
+                {titleText}
+              </h2>
             </Link>
           ) : (
-            <h2 className="text-lg font-semibold">{titleText}</h2>
+            <h2 className="text-lg font-semibold text-[#2F3E33]">{titleText}</h2>
           )}
-          <p className="mt-1 text-sm text-gray-600">
+          <p className="mt-1 text-sm text-[#5C6F62]">
             {speakerName}
             {formattedDate && ` • ${formattedDate}`}
           </p>
           {seriesTitle && (
-            <span className="mt-2 inline-block rounded-full bg-gray-100 px-2 py-0.5 text-xs">
+            <span className="mt-2 inline-block rounded-full bg-[#C1683B]/10 px-2 py-0.5 text-xs font-medium text-[#A95530]">
               {seriesTitle}
             </span>
           )}

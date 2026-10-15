@@ -31,11 +31,6 @@ export function ConnectCard({ connect }: ConnectCardProps) {
       ? connect.image.sizes?.card?.url || connect.image.url
       : null
 
-  const imageAlt =
-    typeof connect.image === 'object' && connect.image !== null
-      ? connect.image.alt ?? connect.name
-      : connect.name
-
   const safeFormUrl = ensureHttps(connect.googleFormUrl)
   const formHref = typeof safeFormUrl === 'string' ? safeFormUrl : undefined
   const categoryLabel = connect.category ? CONNECT_CATEGORY_LABELS[connect.category] : null
@@ -46,7 +41,11 @@ export function ConnectCard({ connect }: ConnectCardProps) {
         <div className="relative h-48 w-full">
           <Image
             src={imageUrl}
-            alt={imageAlt}
+            alt={
+              typeof connect.image === 'object' && connect.image !== null
+                ? connect.image.alt
+                : connect.name
+            }
             fill
             sizes="(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw"
             className="object-cover"

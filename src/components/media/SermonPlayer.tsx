@@ -17,7 +17,9 @@ export function SermonPlayer({ audioUrl, videoUrl, title }: Props) {
           <button
             onClick={() => setTab('video')}
             className={`rounded px-3 py-1 ${
-              tab === 'video' ? 'bg-black text-white' : 'bg-gray-100'
+              tab === 'video'
+                ? 'bg-[#2F3E33] text-[#FBF6EE]'
+                : 'bg-[#EFE8DC] text-[#2F3E33] hover:bg-[#E2D9CC]'
             }`}
           >
             Watch
@@ -25,7 +27,9 @@ export function SermonPlayer({ audioUrl, videoUrl, title }: Props) {
           <button
             onClick={() => setTab('audio')}
             className={`rounded px-3 py-1 ${
-              tab === 'audio' ? 'bg-black text-white' : 'bg-gray-100'
+              tab === 'audio'
+                ? 'bg-[#2F3E33] text-[#FBF6EE]'
+                : 'bg-[#EFE8DC] text-[#2F3E33] hover:bg-[#E2D9CC]'
             }`}
           >
             Listen

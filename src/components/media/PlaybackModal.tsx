@@ -25,12 +25,15 @@ export function PlaybackModal({ open, onClose, title, audioUrl, videoUrl }: Prop
       onClick={onClose}
     >
       <div
-        className="w-full max-w-3xl rounded-lg bg-white p-4"
+        className="w-full max-w-3xl rounded-lg border border-[#E2D9CC] bg-[#FBF6EE] p-4 text-[#2F3E33]"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="mb-3 flex items-center justify-between">
           <h3 className="font-semibold">{title}</h3>
-          <button onClick={onClose} className="rounded px-2 py-1 hover:bg-gray-100">
+          <button
+            onClick={onClose}
+            className="rounded px-2 py-1 text-[#2F3E33] hover:bg-[#EFE8DC]"
+          >
             ✕
           </button>
         </div>

@@ -1,24 +1,59 @@
 export type VideoProvider = 'youtube' | 'facebook' | 'vimeo' | 'unknown'
 
+function getHostname(url: string): string | null {
+  try {
+    return new URL(url).hostname.toLowerCase().replace(/^www\./, '')
+  } catch {
+    return null
+  }
+}
+
 export function getVideoProvider(url?: string): VideoProvider {
   if (!url) return 'unknown'
-  if (/youtube\.com|youtu\.be/.test(url)) return 'youtube'
-  if (/facebook\.com|fb\.watch/.test(url)) return 'facebook'
-  if (/vimeo\.com/.test(url)) return 'vimeo'
+  const hostname = getHostname(url)
+  if (
+    hostname === 'youtube.com' ||
+    hostname?.endsWith('.youtube.com') ||
+    hostname === 'youtu.be'
+  ) {
+    return 'youtube'
+  }
+  if (
+    hostname === 'facebook.com' ||
+    hostname?.endsWith('.facebook.com') ||
+    hostname === 'fb.watch'
+  ) {
+    return 'facebook'
+  }
+  if (hostname === 'vimeo.com' || hostname?.endsWith('.vimeo.com')) return 'vimeo'
   return 'unknown'
 }
 
 export function getYouTubeId(url: string): string | null {
-  const patterns = [
-    /(?:youtube\.com\/watch\?v=)([\w-]+)/,
-    /(?:youtu\.be\/)([\w-]+)/,
-    /(?:youtube\.com\/embed\/)([\w-]+)/,
-    /(?:youtube\.com\/shorts\/)([\w-]+)/,
-  ]
-  for (const p of patterns) {
-    const m = url.match(p)
-    if (m) return m[1]
+  try {
+    const parsed = new URL(url)
+    const hostname = parsed.hostname.toLowerCase().replace(/^www\./, '')
+
+    if (hostname === 'youtu.be') {
+      const id = parsed.pathname.split('/').filter(Boolean)[0]
+      return id && /^[\w-]+$/.test(id) ? id : null
+    }
+
+    if (hostname !== 'youtube.com' && !hostname.endsWith('.youtube.com')) {
+      return null
+    }
+
+    if (parsed.pathname === '/watch') {
+      const id = parsed.searchParams.get('v')
+      return id && /^[\w-]+$/.test(id) ? id : null
+    }
+
+    const match = parsed.pathname.match(/^\/(?:embed|shorts)\/([\w-]+)/)
+    if (match) return match[1]
+  } catch {
+    return null
   }
+
   return null
 }
 

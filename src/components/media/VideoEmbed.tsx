@@ -9,9 +9,9 @@ export function VideoEmbed({ url, title }: Props) {
 
   if (!embed) {
     return (
-      <div className="rounded-lg border border-dashed p-6 text-center text-sm text-gray-500">
+      <div className="rounded-lg border border-dashed border-[#E2D9CC] bg-[#FBF6EE] p-6 text-center text-sm text-[#5C6F62]">
         Unsupported video link.{' '}
-        <a href={url} target="_blank" rel="noreferrer" className="underline">
+        <a href={url} target="_blank" rel="noreferrer" className="text-[#C1683B] underline">
           Open in new tab →
         </a>
       </div>
