@@ -1,87 +1,98 @@
 import type { CollectionConfig } from 'payload'
+import { slugify } from '../lib/slugify'
+import { getVideoProvider, getYouTubeId } from '../lib/video'
 
 export const Sermons: CollectionConfig = {
   slug: 'sermons',
   admin: {
     useAsTitle: 'title',
-    defaultColumns: ['title', 'speaker', 'date', 'series', '_status'],
+    group: 'Media',
+    defaultColumns: ['title', 'speaker', 'series', 'date', 'status'],
   },
-  access: {
-    read: ({ req: { user } }) => {
-      if (user) return true
-      return {
-        _status: {
-          equals: 'published',
-        },
-      }
-    },
-  },
-  versions: {
-    drafts: true,
-  },
+  access: { read: () => true },
+  versions: { drafts: true },
   fields: [
+    { name: 'title', type: 'text', required: true },
     {
-      name: 'title',
+      name: 'slug',
       type: 'text',
       required: true,
-    },
-    {
-      name: 'speaker',
-      type: 'text',
-      required: true,
-      defaultValue: 'Senior Pastor',
+      unique: true,
       admin: {
         position: 'sidebar',
       },
+      hooks: {
+        beforeValidate: [({ value, data }) => value || slugify(data?.title)],
+      },
+    },
+    {
+      name: 'speaker',
+      type: 'relationship',
+      relationTo: 'speakers',
+      required: true,
+    },
+    {
+      name: 'series',
+      type: 'relationship',
+      relationTo: 'series',
     },
     {
       name: 'date',
       type: 'date',
       required: true,
-      defaultValue: () => new Date().toISOString(),
-      admin: {
-        position: 'sidebar',
-        date: {
-          pickerAppearance: 'dayOnly',
-        },
-      },
     },
     {
       name: 'scripture',
       type: 'text',
       admin: {
-        description: 'Anchor scripture text (e.g. John 15:1-8, Matthew 28:19)',
+        description: 'Optional scripture reference for the sermon',
       },
     },
+    { name: 'summary', type: 'textarea' },
     {
-      name: 'series',
-      type: 'text',
-      admin: {
-        description: 'Teaching series name (e.g. The Master Builder, Sacred Foundations)',
-        position: 'sidebar',
-      },
+      name: 'tags',
+      type: 'array',
+      fields: [{ name: 'tag', type: 'text' }],
     },
     {
       name: 'videoUrl',
       type: 'text',
       admin: {
-        description: 'YouTube, Vimeo, or video stream URL',
+        description: 'Link URL Youtube, Facebook, Vimeo, etc.',
+      },
+      hooks: {
+        beforeChange: [
+          ({ value }) => {
+            if (!value) return value
+            if (getVideoProvider(value) !== 'youtube') return value
+            const id = getYouTubeId(value)
+            return id ? `https://www.youtube.com/watch?v=${id}` : value
+          },
+        ],
+      },
+    },
+    { name: 'audio', type: 'upload', relationTo: 'media' },
+    { name: 'thumbnail', type: 'upload', relationTo: 'media' },
+    { name: 'studyGuide', type: 'upload', relationTo: 'media' },
+    {
+      name: 'studyNotes',
+      type: 'richText',
+      admin: {
+        description: 'study notes for the sermon',
       },
     },
     {
-      name: 'thumbnail',
-      type: 'upload',
-      relationTo: 'media',
-      admin: {
-        description: 'Sermon title graphic or video thumbnail photo',
-      },
+      name: 'status',
+      type: 'select',
+      defaultValue: 'published',
+      options: ['draft', 'published', 'archived'],
+      admin: { position: 'sidebar' },
     },
     {
-      name: 'summary',
-      type: 'textarea',
-      admin: {
-        description: 'Sermon summary, key takeaways, and reflection questions',
-      },
+      name: 'featured',
+      type: 'checkbox',
+      defaultValue: false,
+      admin: { position: 'sidebar' },
     },
   ],
 }

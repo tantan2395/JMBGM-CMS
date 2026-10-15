@@ -9,7 +9,9 @@ import { OutreachesGlobeSection, type ChurchBranch } from "@/components/outreach
 import { EventFilterGrid, type EventItem } from "@/components/events/EventFilterGrid"
 import { ApostolicMissionSection } from "@/components/mission/ApostolicMissionSection"
 import { PrayerGivingSection } from "@/components/giving/PrayerGivingSection"
+import { SermonThumbnail } from "@/components/media/SermonThumbnail"
 import { mergeWithCanonical } from "@/components/storytelling/story-data"
+import { FALLBACK_SERMONS } from "@/lib/constants/media-fallbacks"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Play, ArrowRight, Heart } from "lucide-react"
@@ -66,6 +68,7 @@ async function getSermons(): Promise<Sermon[]> {
       },
       sort: "-date",
       limit: 3,
+      depth: 2,
     })
     return res.docs as Sermon[]
   } catch {
@@ -215,42 +218,6 @@ const CANONICAL_BRANCHES: ChurchBranch[] = [
 ]
 
 // Fallback Sermons for rich media preview
-const FALLBACK_SERMONS = [
-  {
-    id: "sermon-1",
-    title: "The Sovereign Architect: Walking in Divine Order",
-    speaker: "Senior Pastor David Santos",
-    date: "2026-09-20",
-    scripture: "Hebrews 3:4",
-    series: "The Master Builder Series",
-    summary:
-      "Discover the foundational truth that every storm can be navigated when our life and home are established on Christ, the true Builder.",
-    thumbnailUrl: "https://images.unsplash.com/photo-1507692049790-de58290a4334?auto=format&fit=crop&w=800&q=80",
-  },
-  {
-    id: "sermon-2",
-    title: "Rooted in Good Soil: Deep Discipleship",
-    speaker: "Associate Pastor Joshua Mendoza",
-    date: "2026-09-13",
-    scripture: "Matthew 13:8 & Colossians 2:7",
-    series: "Sacred Foundations",
-    summary:
-      "How to cultivate an unobstructed spiritual soil where God's Word takes deep root and yields thirty, sixty, and a hundredfold fruit.",
-    thumbnailUrl: "https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=800&q=80",
-  },
-  {
-    id: "sermon-3",
-    title: "He Makes His Ministers a Flame of Fire",
-    speaker: "Guest Evangelist",
-    date: "2026-09-06",
-    scripture: "Hebrews 1:7 & Acts 2:3–4",
-    series: "Kingdom Empowerment",
-    summary:
-      "Being refueled and purified by the Holy Spirit to burn as unquenchable beacons of truth, love, and revival in our neighborhoods.",
-    thumbnailUrl: "https://images.unsplash.com/photo-1509021436665-8f07dbf5bf1d?auto=format&fit=crop&w=800&q=80",
-  },
-]
-
 export default async function HomePage() {
   const [siteSettings, announcements, sermons, outreaches, cmsChapters] = await Promise.all([
     getSiteSettings(),
@@ -329,10 +296,18 @@ export default async function HomePage() {
       ? sermons.map((s) => ({
           id: s.id,
           title: s.title,
-          speaker: s.speaker,
+          speaker:
+            typeof s.speaker === "object" && s.speaker !== null
+              ? s.speaker.name
+              : "Senior Pastor",
           date: s.date,
           scripture: s.scripture || "Holy Scripture",
-          series: s.series || "Sunday Celebration",
+          series:
+            typeof s.series === "object" && s.series !== null
+              ? s.series.title
+              : typeof s.series === "string"
+                ? s.series
+                : "Sunday Celebration",
           summary: s.summary || "Listen to this life-transforming message from the Word of God.",
           thumbnailUrl:
             getMediaUrl(s.thumbnail) ||
@@ -423,8 +398,7 @@ export default async function HomePage() {
               >
                 <div>
                   <div className="relative h-48 w-full overflow-hidden bg-[#0B120E]">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
+                    <SermonThumbnail
                       src={sermon.thumbnailUrl}
                       alt={sermon.title}
                       className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105 opacity-80"

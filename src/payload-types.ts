@@ -69,6 +69,8 @@ export interface Config {
   collections: {
     users: User;
     media: Media;
+    speakers: Speaker;
+    series: Series;
     connects: Connect;
     pages: Page;
     announcements: Announcement;
@@ -84,6 +86,8 @@ export interface Config {
   collectionsSelect: {
     users: UsersSelect<false> | UsersSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
+    speakers: SpeakersSelect<false> | SpeakersSelect<true>;
+    series: SeriesSelect<false> | SeriesSelect<true>;
     connects: ConnectsSelect<false> | ConnectsSelect<true>;
     pages: PagesSelect<false> | PagesSelect<true>;
     announcements: AnnouncementsSelect<false> | AnnouncementsSelect<true>;
@@ -167,8 +171,9 @@ export interface User {
  */
 export interface Media {
   id: number;
-  alt: string;
+  alt?: string | null;
   caption?: string | null;
+  credit?: string | null;
   updatedAt: string;
   createdAt: string;
   url?: string | null;
@@ -206,6 +211,38 @@ export interface Media {
       filename?: string | null;
     };
   };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "speakers".
+ */
+export interface Speaker {
+  id: number;
+  name: string;
+  slug: string;
+  role?: string | null;
+  bio?: string | null;
+  photo?: (number | null) | Media;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "series".
+ */
+export interface Series {
+  id: number;
+  title: string;
+  slug: string;
+  description?: string | null;
+  coverImage?: (number | null) | Media;
+  startDate?: string | null;
+  /**
+   * PDF study guide for the series
+   */
+  studyGuide?: (number | null) | Media;
+  updatedAt: string;
+  createdAt: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -444,28 +481,48 @@ export interface StoryChapter {
 export interface Sermon {
   id: number;
   title: string;
-  speaker: string;
+  slug: string;
+  speaker: number | Speaker;
+  series?: (number | null) | Series;
   date: string;
   /**
-   * Anchor scripture text (e.g. John 15:1-8, Matthew 28:19)
+   * Optional scripture reference for the sermon
    */
   scripture?: string | null;
+  summary?: string | null;
+  tags?:
+    | {
+        tag?: string | null;
+        id?: string | null;
+      }[]
+    | null;
   /**
-   * Teaching series name (e.g. The Master Builder, Sacred Foundations)
-   */
-  series?: string | null;
-  /**
-   * YouTube, Vimeo, or video stream URL
+   * Link URL Youtube, Facebook, Vimeo, etc.
    */
   videoUrl?: string | null;
-  /**
-   * Sermon title graphic or video thumbnail photo
-   */
+  audio?: (number | null) | Media;
   thumbnail?: (number | null) | Media;
+  studyGuide?: (number | null) | Media;
   /**
-   * Sermon summary, key takeaways, and reflection questions
+   * study notes for the sermon
    */
-  summary?: string | null;
+  studyNotes?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  status?: ('draft' | 'published' | 'archived') | null;
+  featured?: boolean | null;
   updatedAt: string;
   createdAt: string;
   _status?: ('draft' | 'published') | null;
@@ -501,6 +558,14 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'media';
         value: number | Media;
+      } | null)
+    | ({
+        relationTo: 'speakers';
+        value: number | Speaker;
+      } | null)
+    | ({
+        relationTo: 'series';
+        value: number | Series;
       } | null)
     | ({
         relationTo: 'connects';
@@ -600,6 +665,7 @@ export interface UsersSelect<T extends boolean = true> {
 export interface MediaSelect<T extends boolean = true> {
   alt?: T;
   caption?: T;
+  credit?: T;
   updatedAt?: T;
   createdAt?: T;
   url?: T;
@@ -645,6 +711,33 @@ export interface MediaSelect<T extends boolean = true> {
               filename?: T;
             };
       };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "speakers_select".
+ */
+export interface SpeakersSelect<T extends boolean = true> {
+  name?: T;
+  slug?: T;
+  role?: T;
+  bio?: T;
+  photo?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "series_select".
+ */
+export interface SeriesSelect<T extends boolean = true> {
+  title?: T;
+  slug?: T;
+  description?: T;
+  coverImage?: T;
+  startDate?: T;
+  studyGuide?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -720,13 +813,25 @@ export interface StoryChaptersSelect<T extends boolean = true> {
  */
 export interface SermonsSelect<T extends boolean = true> {
   title?: T;
+  slug?: T;
   speaker?: T;
+  series?: T;
   date?: T;
   scripture?: T;
-  series?: T;
-  videoUrl?: T;
-  thumbnail?: T;
   summary?: T;
+  tags?:
+    | T
+    | {
+        tag?: T;
+        id?: T;
+      };
+  videoUrl?: T;
+  audio?: T;
+  thumbnail?: T;
+  studyGuide?: T;
+  studyNotes?: T;
+  status?: T;
+  featured?: T;
   updatedAt?: T;
   createdAt?: T;
   _status?: T;

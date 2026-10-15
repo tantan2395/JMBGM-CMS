@@ -1,6 +1,7 @@
 import { getPayload } from 'payload'
 import config from '../payload.config'
 import { FALLBACK_CONNECTS } from '../lib/constants/connect-fallbacks'
+import { FALLBACK_SERMONS } from '../lib/constants/media-fallbacks'
 import 'dotenv/config'
 
 async function seed() {
@@ -391,6 +392,67 @@ async function seed() {
   } else {
     console.log('ℹ️ Connects collection already contains records.')
   }
+
+  // 6. Seed canonical media speakers, series, and sermons
+  console.log('🎙️ Checking canonical media library...')
+  for (const sermon of FALLBACK_SERMONS) {
+    const existingSpeaker = await payload.find({
+      collection: 'speakers',
+      where: { slug: { equals: sermon.speakerSlug } },
+      limit: 1,
+    })
+    const speaker =
+      existingSpeaker.docs[0] ??
+      (await payload.create({
+        collection: 'speakers',
+        data: {
+          name: sermon.speaker,
+          slug: sermon.speakerSlug,
+        },
+      }))
+
+    const existingSeries = await payload.find({
+      collection: 'series',
+      where: { slug: { equals: sermon.seriesSlug } },
+      limit: 1,
+    })
+    const series =
+      existingSeries.docs[0] ??
+      (await payload.create({
+        collection: 'series',
+        data: {
+          title: sermon.series,
+          slug: sermon.seriesSlug,
+        },
+      }))
+
+    const existingSermon = await payload.find({
+      collection: 'sermons',
+      where: { slug: { equals: sermon.slug } },
+      limit: 1,
+    })
+    if (existingSermon.totalDocs > 0) {
+      console.log(`  ℹ️ Sermon already exists: ${sermon.title}`)
+      continue
+    }
+
+    await payload.create({
+      collection: 'sermons',
+      data: {
+        title: sermon.title,
+        slug: sermon.slug,
+        speaker: speaker.id,
+        series: series.id,
+        date: sermon.date,
+        scripture: sermon.scripture,
+        summary: sermon.summary,
+        status: 'published',
+        _status: 'published',
+      },
+    })
+    console.log(`  ✨ Created sermon: ${sermon.title}`)
+  }
+  console.log('✅ Canonical media library is ready.')
 
   console.log('🎉 Seeding completed successfully!')
   process.exit(0)
