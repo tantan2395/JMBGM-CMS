@@ -12,6 +12,3 @@
 
 [context.deploy-preview.environment]
   NODE_TLS_REJECT_UNAUTHORIZED = "0"
-
-[functions]
-  timeout = 26
