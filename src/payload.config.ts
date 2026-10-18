@@ -18,6 +18,15 @@ import { SiteSettings } from './globals/SiteSettings'
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
 
+function formatDatabaseUri(uri?: string): string {
+  if (!uri) return ''
+  if (uri.includes('localhost') || uri.includes('127.0.0.1')) return uri
+  if (/([?&])sslmode=[^&]+/i.test(uri)) {
+    return uri.replace(/([?&])sslmode=[^&]+/i, '$1sslmode=no-verify')
+  }
+  return uri.includes('?') ? `${uri}&sslmode=no-verify` : `${uri}?sslmode=no-verify`
+}
+
 export default buildConfig({
   admin: {
     user: Users.slug,
@@ -35,14 +44,7 @@ export default buildConfig({
   },
   db: postgresAdapter({
     pool: {
-      connectionString: process.env.DATABASE_URI || '',
-      ssl:
-        process.env.DATABASE_URI?.includes('localhost') ||
-        process.env.DATABASE_URI?.includes('127.0.0.1')
-          ? false
-          : {
-              rejectUnauthorized: false,
-            },
+      connectionString: formatDatabaseUri(process.env.DATABASE_URI),
     },
   }),
   sharp,
