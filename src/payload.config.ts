@@ -28,6 +28,7 @@ export default buildConfig({
   collections: [Users, Media, Connects, Pages, Announcements, StoryChapters, Sermons, Outreaches],
   globals: [SiteSettings],
   editor: lexicalEditor(),
+  serverURL: process.env.NEXT_PUBLIC_SERVER_URL || '',
   secret: process.env.PAYLOAD_SECRET || 'jmbgm-app-development-secret-key-32-chars-long',
   typescript: {
     outputFile: path.resolve(dirname, 'payload-types.ts'),
@@ -35,6 +36,13 @@ export default buildConfig({
   db: postgresAdapter({
     pool: {
       connectionString: process.env.DATABASE_URI || '',
+      ssl:
+        process.env.DATABASE_URI?.includes('localhost') ||
+        process.env.DATABASE_URI?.includes('127.0.0.1')
+          ? false
+          : {
+              rejectUnauthorized: false,
+            },
     },
   }),
   sharp,
